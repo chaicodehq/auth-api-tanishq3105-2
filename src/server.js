@@ -1,5 +1,6 @@
-import { createApp } from './app.js';
-import { connectDB } from './db/connect.js';
+import "dotenv/config";
+import { createApp } from "./app.js";
+import { connectDB } from "./db/connect.js";
 
 async function start() {
   try {
@@ -16,7 +17,7 @@ async function start() {
       console.log(`Server running on port ${port}`);
     });
   } catch (error) {
-    console.error('Failed to start server:', error);
+    console.error("Failed to start server:", error);
     process.exit(1);
   }
 }

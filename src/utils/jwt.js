@@ -1,5 +1,5 @@
-import jwt from 'jsonwebtoken';
-
+import jwt from "jsonwebtoken";
+import "dotenv/config";
 /**
  * TODO: Signs a JWT token with the given payload
  *
@@ -27,8 +27,15 @@ import jwt from 'jsonwebtoken';
  * - JWT payload is NOT encrypted, only signed (it's base64 encoded and readable)
  * - Keep JWT_SECRET secure and never commit it to version control
  */
+const secret = process.env.JWT_SECRET;
+const expiry = process.env.JWT_EXPIRES_IN || "24h";
 export function signToken(payload) {
   // Your code here
+
+  const token = jwt.sign(payload, process.env.JWT_SECRET, {
+    expiresIn: expiry,
+  });
+  return token;
 }
 
 /**
@@ -67,4 +74,6 @@ export function signToken(payload) {
  */
 export function verifyToken(token) {
   // Your code here
+  const decoded = jwt.verify(token, process.env.JWT_SECRET);
+  return decoded;
 }

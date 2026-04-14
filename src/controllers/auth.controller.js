@@ -1,6 +1,6 @@
-import bcrypt from 'bcryptjs';
-import { User } from '../models/user.model.js';
-import { signToken } from '../utils/jwt.js';
+import bcrypt from "bcryptjs";
+import { User } from "../models/user.model.js";
+import { signToken } from "../utils/jwt.js";
 
 /**
  * TODO: Register a new user
@@ -14,6 +14,27 @@ import { signToken } from '../utils/jwt.js';
 export async function register(req, res, next) {
   try {
     // Your code here
+    const { name, email, password, role } = req.body;
+    const existing = await User.findOne({ email });
+    if (existing) {
+      res.status(409).json({ error: { message: "Email already exists" } });
+      return;
+    }
+    const newUser = await User.create({
+      name,
+      email,
+      password,
+      role,
+    });
+    res.status(201).json({
+      user: {
+        _id: newUser._id,
+        name: newUser.name,
+        email: newUser.email,
+        role: newUser.role,
+      },
+    });
+    return;
   } catch (error) {
     next(error);
   }
@@ -33,6 +54,35 @@ export async function register(req, res, next) {
 export async function login(req, res, next) {
   try {
     // Your code here
+    const { password, email } = req.body;
+
+    const user = await User.findOne({ email }).select("+password");
+    if (!user) {
+      return res.status(401).json({
+        error: { message: "Invalid credentials" },
+      });
+    }
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      return res
+        .status(401)
+        .json({ error: { message: "Invalid credentials" } });
+    }
+
+    const token = signToken({
+      userId: user._id,
+      email: user.email,
+      role: user.role,
+    });
+    return res.status(200).json({
+      token,
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
+    });
   } catch (error) {
     next(error);
   }
@@ -47,6 +97,9 @@ export async function login(req, res, next) {
 export async function me(req, res, next) {
   try {
     // Your code here
+    return res.status(200).json({
+      user: req.user,
+    });
   } catch (error) {
     next(error);
   }
